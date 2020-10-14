@@ -4,8 +4,12 @@ Rails.application.routes.draw do
   
   namespace :api, defaults: {format: :json} do
     namespace :v1 do 
+      # resources :users
       devise_scope :user do
-        post "sign_up", to: "registrations#create"
+        get   "users/:id(:format)", to: "users#show"
+        patch  "users/:id", to: "users#update"
+        get   "users/", to: "users#index"
+        post "sign_up", to: "users#create"
         post "sign_in", to: "sessions#create"
       end
     end
