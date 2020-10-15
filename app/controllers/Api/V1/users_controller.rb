@@ -1,6 +1,11 @@
 class Api::V1::UsersController < Devise::RegistrationsController
-  before_action :ensure_params_exist, only: :create
+
   skip_before_action :verify_authenticity_token, :only => :create
+  before_action :authenticate_user!,  only: [:index, :current, :update]
+    # before_action :authorize_as_admin, only: [:destroy]
+    # before_action :authorize,          only: [:update]
+  
+
   # sign up
   def create
     @user = User.new user_params
@@ -12,15 +17,20 @@ class Api::V1::UsersController < Devise::RegistrationsController
       }, status: :ok
     else
       render json: {
-        messages: "Sign Up Failded",
+        messages: "User already exist",
         is_success: false,
         data: {}
       }, status: :unprocessable_entity
     end
   end
 
+  def current
+    current_user.update!(last_login: Time.now)
+    render json: current_user
+  end
+
   def update
-    @user = User.find_by(id: params[:id])
+    @user = User.find_by(email: params[:email])
     if @user.update(user_params)
       render json: {
         messages: "Info Successfully Updated",
@@ -45,20 +55,23 @@ class Api::V1::UsersController < Devise::RegistrationsController
     render json: @users
   end
 
+  def destroy
+    user = User.find(params[:id])
+    if user.destroy
+      render json: { status: 200, msg: 'User has been deleted.' }
+    end
+  end
+
   private
   def user_params
-    params.require(:user).permit(:email, :password, :password_confirmation)
+    params.permit(:first_name, :last_name, :email, :password, :password_confirmation)
   end
 
-  def ensure_params_exist
-    return if params[:user].present?
-    render json: {
-        messages: "Missing Params",
-        is_success: false,
-        data: {}
-      }, status: :bad_request
-  end
+ 
 
+  def authorize
+    return_unauthorized unless current_user && current_user.can_modify_user?(params[:id])
+  end
 
   def load_user
     @user = User.find_by(email: sign_in_params[:email])

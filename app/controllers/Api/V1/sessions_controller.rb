@@ -1,10 +1,13 @@
 class Api::V1::SessionsController < Devise::SessionsController
+
+ 
   before_action :sign_in_params, only: :create
   before_action :load_user, only: :create
   # sign in
   def create
     if @user.valid_password?(sign_in_params[:password])
       sign_in "user", @user
+      current_user = @user
       render json: {
         messages: "Signed In Successfully",
         is_success: true,
@@ -21,7 +24,7 @@ class Api::V1::SessionsController < Devise::SessionsController
 
   private
   def sign_in_params
-    params.require(:user).permit(:email, :password)
+    params.permit(:email, :password)
   end
 
   def load_user
