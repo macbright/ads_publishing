@@ -1,9 +1,9 @@
 class Api::V1::UsersController < Devise::RegistrationsController
 
   skip_before_action :verify_authenticity_token, :only => :create
-  before_action :authenticate_user!,  only: [:index, :current, :update]
-    # before_action :authorize_as_admin, only: [:destroy]
-    # before_action :authorize,          only: [:update]
+  before_action :authenticate_user!,  only: [:index, :current, :update, :current]
+  before_action :authorize_as_admin, only: [:destroy]
+  before_action :load_user,          only: [:update]
   
 
   # sign up
@@ -24,13 +24,13 @@ class Api::V1::UsersController < Devise::RegistrationsController
     end
   end
 
-  def current
-    current_user.update!(last_login: Time.now)
-    render json: current_user
-  end
+  # def current
+  #   curr_user.update!(last_login: Time.now)
+  #   render json: curr_user
+  # end
 
   def update
-    @user = User.find_by(email: params[:email])
+    @user = User.find_by(id: params[:id])
     if @user.update(user_params)
       render json: {
         messages: "Info Successfully Updated",
@@ -56,9 +56,11 @@ class Api::V1::UsersController < Devise::RegistrationsController
   end
 
   def destroy
-    user = User.find(params[:id])
-    if user.destroy
-      render json: { status: 200, msg: 'User has been deleted.' }
+    @user = User.find_by(id: params[:id])
+    if @user.destroy
+      head :no_content
+    else 
+      render json: {error: "problem deleting user" }, status: 422
     end
   end
 
@@ -70,11 +72,11 @@ class Api::V1::UsersController < Devise::RegistrationsController
  
 
   def authorize
-    return_unauthorized unless current_user && current_user.can_modify_user?(params[:id])
+    return unauthorized unless curr_user && curr_user.can_modify_user?(params[:id])
   end
 
   def load_user
-    @user = User.find_by(email: sign_in_params[:email])
+    @user = User.find_by(email: user_params[:email])
     if @user
       return @user
     else

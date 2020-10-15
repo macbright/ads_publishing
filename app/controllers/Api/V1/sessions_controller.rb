@@ -7,7 +7,7 @@ class Api::V1::SessionsController < Devise::SessionsController
   def create
     if @user.valid_password?(sign_in_params[:password])
       sign_in "user", @user
-      current_user = @user
+      curr_user = @user
       render json: {
         messages: "Signed In Successfully",
         is_success: true,
