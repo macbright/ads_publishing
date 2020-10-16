@@ -5,7 +5,12 @@ Rails.application.routes.draw do
   
   namespace :api, defaults: {format: :json} do
     namespace :v1 do 
+      
+      
       devise_scope :user do
+        resources :types
+        post    '/new_type', to: 'types#create'
+        get    '/types', to: 'types#index'
         get    '/users/current'  => 'users#current'
         delete '/users/:id'       => 'users#destroy'
         delete 'sign_out'       => 'sessions#destroy'

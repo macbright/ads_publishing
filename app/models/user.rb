@@ -5,7 +5,8 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, jwt_revocation_strategy: JWTBlacklist
-  
+
+  has_many :types
   
 
   validates_length_of       :password, maximum: 72, minimum: 8, allow_nil: true, allow_blank: false
