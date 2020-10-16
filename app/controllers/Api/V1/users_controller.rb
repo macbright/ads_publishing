@@ -4,6 +4,7 @@ class Api::V1::UsersController < Devise::RegistrationsController
   before_action :authenticate_user!,  only: [:index, :current, :update, :current]
   before_action :authorize_as_admin, only: [:destroy]
   before_action :load_user,          only: [:update]
+  before_action :authenticate_user!, except: :create
   
 
   # sign up
@@ -24,10 +25,10 @@ class Api::V1::UsersController < Devise::RegistrationsController
     end
   end
 
-  # def current
-  #   curr_user.update!(last_login: Time.now)
-  #   render json: curr_user
-  # end
+  def current
+    # current_user.update!(last_login: Time.now)
+    render json: current_user
+  end
 
   def update
     @user = User.find_by(id: params[:id])
