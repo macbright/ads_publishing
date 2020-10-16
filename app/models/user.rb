@@ -26,6 +26,10 @@ class User < ApplicationRecord
     role == 'admin' || id.to_s == user_id.to_s
   end
 
+  def change_to_admin(user)
+    user.role = 'admin'
+    user.save
+  end
   # This method tells us if the user is an admin or not.
   def is_admin?
     role == 'admin'

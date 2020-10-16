@@ -1,8 +1,7 @@
 class Api::V1::UsersController < Devise::RegistrationsController
-
+  before_action :authorize, :only => [:destroy, :user_to_admin]
   skip_before_action :verify_authenticity_token, :only => :create
-  before_action :authenticate_user!,  only: [:index, :current, :update, :current]
-  before_action :authorize_as_admin, only: [:destroy]
+  before_action :authenticate_user!,  only: [:index, :current, :update, :destroy]
   before_action :load_user,          only: [:update]
   before_action :authenticate_user!, except: :create
   
@@ -65,15 +64,19 @@ class Api::V1::UsersController < Devise::RegistrationsController
     end
   end
 
+  def user_to_admin
+    @user = User.find_by(id: params[:id])
+    @user.change_to_admin(@user)
+    render json: @user
+  end
+
   private
   def user_params
     params.permit(:first_name, :last_name, :email, :password, :password_confirmation)
   end
 
- 
-
   def authorize
-    return unauthorized unless curr_user && curr_user.can_modify_user?(params[:id])
+    render json: {error: " unauthorized access, action can only be perform by admin" } unless current_user.is_admin?
   end
 
   def load_user
